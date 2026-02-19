@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 1 of 3 (Foundation + AI Pipeline)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-02-19 -- Roadmap created
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-19 -- Completed 01-01-PLAN.md (Project Scaffold + AI Pipeline)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 17% (1/6 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 4min
+- Total execution time: 4min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-foundation | 1/2 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: -
+- Last 5 plans: 01-01 (4min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -46,6 +46,9 @@ Recent decisions affecting current work:
 - [Research]: Use @huggingface/transformers v3.8.x (NOT @xenova/transformers); RMBG-1.4 q8 ONNX only browser-compatible model
 - [Research]: fflate replaces JSZip for ZIP generation (40x faster, async, no main-thread blocking)
 - [Research]: coi-serviceworker required from day one for WASM multithreading on GitHub Pages
+- [01-01]: Manual scaffold (no npm create vite) for full config control
+- [01-01]: Record<string, unknown> cast for HF progress callback to handle discriminated union safely
+- [01-01]: any-typed Segmenter wrapper to avoid TS2590 pipeline union explosion
 
 ### Pending Todos
 
@@ -60,5 +63,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Roadmap created, ready to plan Phase 1
-Resume file: None
+Stopped at: Completed 01-01 (Project Scaffold + AI Pipeline), ready for 01-02
+Resume file: .planning/phases/01-foundation/01-02-PLAN.md

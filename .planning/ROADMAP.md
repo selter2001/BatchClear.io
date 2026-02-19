@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Project scaffold + Web Worker AI pipeline (Vite, React, Tailwind, TypeScript, coi-serviceworker, Worker singleton with RMBG-1.4, model download progress)
+- [x] 01-01-PLAN.md -- Project scaffold + Web Worker AI pipeline (Vite, React, Tailwind, TypeScript, coi-serviceworker, Worker singleton with RMBG-1.4, model download progress)
 - [ ] 01-02-PLAN.md -- Canvas compositor + minimal drop UI (full-resolution mask compositing, OffscreenCanvas reuse, basic drop zone, end-to-end single-image flow with human verification)
 
 ### Phase 2: Batch Upload + Full UI
@@ -73,10 +73,10 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + AI Pipeline | 0/2 | Planning complete | - |
+| 1. Foundation + AI Pipeline | 1/2 | In progress | - |
 | 2. Batch Upload + Full UI | 0/2 | Not started | - |
 | 3. Batch Download + Deploy | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-19*
-*Last updated: 2026-02-19*
+*Last updated: 2026-02-19 -- Plan 01-01 complete*
