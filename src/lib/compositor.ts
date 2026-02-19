@@ -57,7 +57,10 @@ export async function compositeFullResolution(
     rgbaData = new Uint8ClampedArray(maskData.data);
   }
 
-  const maskImageData = new ImageData(rgbaData, maskData.width, maskData.height);
+  // Ensure the backing buffer is a plain ArrayBuffer (not SharedArrayBuffer)
+  // to satisfy the ImageData constructor's type requirements.
+  const rgbaBuffer = new Uint8ClampedArray(rgbaData.buffer.slice(0)) as Uint8ClampedArray<ArrayBuffer>;
+  const maskImageData = new ImageData(rgbaBuffer, maskData.width, maskData.height);
   maskCtx.putImageData(maskImageData, 0, 0);
 
   // 3. Scale the mask to original resolution
