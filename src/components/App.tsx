@@ -4,10 +4,26 @@ import type {
   ModelStatus,
   WorkerOutMessage,
 } from "../lib/types";
+import { heicTo } from "heic-to/csp";
 import { compositeFullResolution } from "../lib/compositor";
 import { DropZone } from "./DropZone";
 import { ModelProgress } from "./ModelProgress";
 import { ResultView } from "./ResultView";
+
+const HEIC_TYPES = new Set(["image/heic", "image/heif"]);
+const HEIC_EXTENSIONS = new Set([".heic", ".heif"]);
+
+function isHeicFile(file: File): boolean {
+  if (HEIC_TYPES.has(file.type)) return true;
+  const ext = file.name.toLowerCase().match(/\.[^.]+$/)?.[0] ?? "";
+  return HEIC_EXTENSIONS.has(ext);
+}
+
+async function convertHeicToJpeg(file: File): Promise<File> {
+  const jpegBlob = await heicTo({ blob: file, type: "image/jpeg", quality: 0.95 });
+  const name = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
+  return new File([jpegBlob], name, { type: "image/jpeg" });
+}
 
 export function App() {
   // -------------------------------------------------------------------------
@@ -157,23 +173,36 @@ export function App() {
   // Drop handler
   // -------------------------------------------------------------------------
   const handleFileDrop = useCallback(
-    (file: File) => {
+    async (file: File) => {
       // Revoke previous result URL to prevent memory leaks
       if (resultUrl) {
         URL.revokeObjectURL(resultUrl);
       }
 
-      setOriginalFile(file);
-      originalFileRef.current = file;
       setResultUrl(null);
       setError(null);
       setIsProcessing(true);
 
-      workerRef.current?.postMessage({
-        type: "process",
-        imageId: "single",
-        imageData: file,
-      });
+      try {
+        // Convert HEIC to JPEG before processing (browsers don't support HEIC natively)
+        const processFile = isHeicFile(file) ? await convertHeicToJpeg(file) : file;
+
+        setOriginalFile(processFile);
+        originalFileRef.current = processFile;
+
+        workerRef.current?.postMessage({
+          type: "process",
+          imageId: "single",
+          imageData: processFile,
+        });
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? `HEIC conversion failed: ${err.message}`
+            : "Failed to convert HEIC file",
+        );
+        setIsProcessing(false);
+      }
     },
     [resultUrl],
   );

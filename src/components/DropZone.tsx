@@ -1,6 +1,21 @@
 import { useCallback, useRef, useState } from "react";
 
-const ACCEPTED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+const ACCEPTED_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+]);
+
+// iPhone HEIC files sometimes report empty or generic MIME types
+const HEIC_EXTENSIONS = new Set([".heic", ".heif"]);
+
+function isAcceptedFile(file: File): boolean {
+  if (ACCEPTED_TYPES.has(file.type)) return true;
+  const ext = file.name.toLowerCase().match(/\.[^.]+$/)?.[0] ?? "";
+  return HEIC_EXTENSIONS.has(ext);
+}
 
 interface DropZoneProps {
   onFileDrop: (file: File) => void;
@@ -16,8 +31,8 @@ export function DropZone({ onFileDrop, disabled }: DropZoneProps) {
     (file: File | undefined) => {
       setError(null);
       if (!file) return;
-      if (!ACCEPTED_TYPES.has(file.type)) {
-        setError("Invalid file type. Please use PNG, JPG, or WebP.");
+      if (!isAcceptedFile(file)) {
+        setError("Invalid file type. Please use PNG, JPG, WebP, or HEIC.");
         return;
       }
       onFileDrop(file);
@@ -92,7 +107,7 @@ export function DropZone({ onFileDrop, disabled }: DropZoneProps) {
       <p className="mb-2 text-lg font-medium text-gray-700">
         Drop an image here
       </p>
-      <p className="mb-4 text-sm text-gray-500">PNG, JPG, or WebP</p>
+      <p className="mb-4 text-sm text-gray-500">PNG, JPG, WebP, or HEIC</p>
 
       <button
         type="button"
@@ -106,7 +121,7 @@ export function DropZone({ onFileDrop, disabled }: DropZoneProps) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"
         onChange={handleInputChange}
         className="hidden"
       />
