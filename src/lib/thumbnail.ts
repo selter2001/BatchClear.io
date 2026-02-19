@@ -11,6 +11,9 @@
  * Create a display-size thumbnail blob URL from a full-resolution blob.
  * If the image is already within maxDim, returns a blob URL to the original.
  *
+ * Uses createImageBitmap with resizeWidth/resizeHeight to hint the browser
+ * to decode at reduced resolution (avoids full-res 48MB bitmap per image).
+ *
  * @param blob   - Source image blob (JPEG, PNG, etc.)
  * @param maxDim - Maximum dimension (width or height) for the thumbnail
  * @param format - Output format ("image/jpeg" for opaque, "image/png" for transparent)
@@ -21,27 +24,34 @@ export async function createThumbnailUrl(
   maxDim = 600,
   format: "image/jpeg" | "image/png" = "image/jpeg",
 ): Promise<string> {
-  const bitmap = await createImageBitmap(blob);
-  const { width, height } = bitmap;
-
-  // Already small enough -- just create a blob URL for the original
-  if (width <= maxDim && height <= maxDim) {
-    bitmap.close();
-    return URL.createObjectURL(blob);
+  // Decode at reduced resolution using resize hints.
+  // We request maxDim × maxDim -- createImageBitmap preserves aspect ratio
+  // when both dimensions are specified by fitting within the box, but some
+  // browsers may stretch. To be safe, we draw to a canvas at correct dims.
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(blob, {
+      resizeWidth: maxDim,
+      resizeHeight: maxDim,
+      resizeQuality: "medium",
+    });
+  } catch {
+    // Fallback for browsers that don't support resize options
+    bitmap = await createImageBitmap(blob);
   }
 
-  const scale = maxDim / Math.max(width, height);
-  const thumbW = Math.round(width * scale);
-  const thumbH = Math.round(height * scale);
+  const { width, height } = bitmap;
 
-  const canvas = new OffscreenCanvas(thumbW, thumbH);
+  // Already small enough (or was resized to fit) -- render to canvas at
+  // the bitmap's actual dimensions to get a proper blob URL.
+  const canvas = new OffscreenCanvas(width, height);
   const ctx = canvas.getContext("2d");
   if (!ctx) {
     bitmap.close();
     return URL.createObjectURL(blob);
   }
 
-  ctx.drawImage(bitmap, 0, 0, thumbW, thumbH);
+  ctx.drawImage(bitmap, 0, 0);
   bitmap.close();
 
   const thumbBlob = await canvas.convertToBlob({

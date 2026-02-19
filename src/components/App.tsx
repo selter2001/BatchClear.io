@@ -427,29 +427,32 @@ export function App() {
   // -------------------------------------------------------------------------
   const handleFilesAccepted = useCallback(
     async (files: File[]) => {
-      const items: ImageItem[] = await Promise.all(
-        files.map(async (file) => {
-          const processedFile = isHeicFile(file)
-            ? await convertHeicToJpeg(file)
-            : file;
+      // Process files SEQUENTIALLY to avoid OOM from parallel full-res decodes.
+      // Each HEIC conversion + thumbnail generation decodes a full-res bitmap
+      // (~48MB per 12MP image). Parallel processing of 14+ files would exceed
+      // Safari's per-tab memory limit.
+      const items: ImageItem[] = [];
+      for (const file of files) {
+        const processedFile = isHeicFile(file)
+          ? await convertHeicToJpeg(file)
+          : file;
 
-          const originalUrl = URL.createObjectURL(processedFile);
-          const thumbnailUrl = await createThumbnailUrl(
-            processedFile,
-            600,
-            "image/jpeg",
-          );
+        const originalUrl = URL.createObjectURL(processedFile);
+        const thumbnailUrl = await createThumbnailUrl(
+          processedFile,
+          600,
+          "image/jpeg",
+        );
 
-          return {
-            id: nextId(),
-            file: processedFile,
-            name: file.name,
-            status: "idle" as const,
-            originalUrl,
-            thumbnailUrl,
-          };
-        }),
-      );
+        items.push({
+          id: nextId(),
+          file: processedFile,
+          name: file.name,
+          status: "idle" as const,
+          originalUrl,
+          thumbnailUrl,
+        });
+      }
 
       // Store files synchronously BEFORE dispatching so processOneImage
       // can access them immediately (stateRef lags behind by one render).

@@ -24,13 +24,14 @@ export function BeforeAfter({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-lg ${showCheckerboard ? "checkerboard" : "bg-white"}`}
+      className={`relative h-full w-full overflow-hidden ${showCheckerboard ? "checkerboard" : "bg-white"}`}
     >
       {/* After image (full, bottom layer) */}
       <img
         src={afterUrl}
         alt={`${alt} - after`}
-        className="block h-auto w-full"
+        className="h-full w-full object-cover"
+        decoding="async"
         draggable={false}
       />
 
@@ -38,8 +39,9 @@ export function BeforeAfter({
       <img
         src={beforeUrl}
         alt={`${alt} - before`}
-        className="absolute inset-0 block h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
         style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
+        decoding="async"
         draggable={false}
       />
 

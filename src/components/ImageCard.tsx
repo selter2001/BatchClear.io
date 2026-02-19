@@ -24,8 +24,12 @@ export const ImageCard = memo(function ImageCard({
 
   return (
     <div className="animate-fade-in-up overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      {/* Preview area */}
-      <div className="relative">
+      {/* Preview area - fixed 4:3 ratio for uniform grid layout */}
+      <div
+        className={`relative aspect-[4/3] overflow-hidden ${
+          image.status === "error" ? "border-b-2 border-red-400" : ""
+        }`}
+      >
         {image.status === "done" && afterThumbUrl ? (
           <BeforeAfter
             beforeUrl={image.thumbnailUrl}
@@ -34,17 +38,11 @@ export const ImageCard = memo(function ImageCard({
             showCheckerboard={backgroundMode === "transparent"}
           />
         ) : (
-          <div
-            className={`relative overflow-hidden ${
-              image.status === "error"
-                ? "border-b-2 border-red-400"
-                : ""
-            }`}
-          >
+          <>
             <img
               src={image.thumbnailUrl}
               alt={image.name}
-              className="block h-auto w-full"
+              className="h-full w-full object-cover"
               decoding="async"
             />
             {/* Processing overlay */}
@@ -53,7 +51,7 @@ export const ImageCard = memo(function ImageCard({
                 <div className="h-8 w-8 animate-spin rounded-full border-3 border-white border-t-transparent" />
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 
