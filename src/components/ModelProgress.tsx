@@ -10,7 +10,7 @@ export function ModelProgress({ status, progress }: ModelProgressProps) {
 
   if (status === "ready") {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700">
+      <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
@@ -21,7 +21,7 @@ export function ModelProgress({ status, progress }: ModelProgressProps) {
 
   if (status === "error") {
     return (
-      <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">
+      <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
         Failed to load AI model. Please refresh and try again.
       </div>
     );
@@ -31,8 +31,8 @@ export function ModelProgress({ status, progress }: ModelProgressProps) {
   if (!progress) {
     return (
       <div className="w-full max-w-md">
-        <p className="mb-2 text-sm text-gray-600">Initializing AI model...</p>
-        <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+        <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">Initializing AI model...</p>
+        <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
           <div className="h-full w-1/3 animate-pulse rounded-full bg-blue-500" />
         </div>
       </div>
@@ -46,14 +46,14 @@ export function ModelProgress({ status, progress }: ModelProgressProps) {
   return (
     <div className="w-full max-w-md">
       <div className="mb-1 flex items-baseline justify-between">
-        <p className="text-sm font-medium text-gray-700">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Downloading AI model (one-time only)
         </p>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
           {loadedMB.toFixed(1)} MB / {totalMB.toFixed(1)} MB
         </span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+      <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
         <div
           className="h-full rounded-full bg-blue-500 transition-[width] duration-200"
           style={{ width: `${Math.min(pct, 100)}%` }}

@@ -14,6 +14,7 @@ interface DropZoneProps {
   onFilesRejected: (rejections: FileRejection[]) => void;
   disabled: boolean;
   imageCount: number;
+  compact?: boolean;
 }
 
 export function DropZone({
@@ -21,6 +22,7 @@ export function DropZone({
   onFilesRejected,
   disabled,
   imageCount,
+  compact = false,
 }: DropZoneProps) {
   const [rejectionErrors, setRejectionErrors] = useState<string[]>([]);
 
@@ -55,22 +57,71 @@ export function DropZone({
     onDropRejected: handleRejected,
   });
 
+  // Compact mode: smaller inline drop zone
+  if (compact) {
+    return (
+      <div className="w-full">
+        <div
+          {...getRootProps()}
+          className={`flex items-center justify-center gap-3 rounded-lg border-2 border-dashed px-4 py-3 transition-colors ${
+            disabled
+              ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-50 dark:border-gray-700 dark:bg-gray-800"
+              : isDragActive
+                ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20"
+                : "cursor-pointer border-gray-300 bg-white hover:border-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"
+          }`}
+        >
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+              Drop images here...
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Drop more images or{" "}
+                <span className="font-medium text-gray-700 underline dark:text-gray-300">
+                  browse
+                </span>
+              </p>
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                ({remaining} remaining)
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Rejection errors */}
+        {rejectionErrors.length > 0 && (
+          <div className="mt-2 rounded-lg bg-red-50 px-4 py-2 dark:bg-red-900/20">
+            {rejectionErrors.map((err, i) => (
+              <p key={i} className="text-xs text-red-700 dark:text-red-400">
+                {err}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Full-size mode: large centered drop zone
   return (
     <div className="w-full max-w-lg">
       <div
         {...getRootProps()}
         className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 transition-colors ${
           disabled
-            ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-50"
+            ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-50 dark:border-gray-700 dark:bg-gray-800"
             : isDragActive
-              ? "border-blue-500 bg-blue-50"
-              : "cursor-pointer border-gray-300 bg-white hover:border-gray-400"
+              ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20"
+              : "cursor-pointer border-gray-300 bg-white hover:border-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"
         }`}
       >
         <input {...getInputProps()} />
 
         <svg
-          className="mb-4 h-12 w-12 text-gray-400"
+          className="mb-4 h-12 w-12 text-gray-400 dark:text-gray-500"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -84,22 +135,22 @@ export function DropZone({
         </svg>
 
         {isDragActive ? (
-          <p className="mb-2 text-lg font-medium text-blue-600">
+          <p className="mb-2 text-lg font-medium text-blue-600 dark:text-blue-400">
             Drop images here...
           </p>
         ) : (
           <>
-            <p className="mb-2 text-lg font-medium text-gray-700">
+            <p className="mb-2 text-lg font-medium text-gray-700 dark:text-gray-300">
               Drop up to 100 images here
             </p>
-            <p className="mb-4 text-sm text-gray-500">
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
               PNG, JPG, WebP, or HEIC
             </p>
           </>
         )}
 
         {!isDragActive && (
-          <span className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700">
+          <span className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200">
             Browse
           </span>
         )}
@@ -107,9 +158,9 @@ export function DropZone({
 
       {/* Rejection errors */}
       {rejectionErrors.length > 0 && (
-        <div className="mt-3 rounded-lg bg-red-50 px-4 py-3">
+        <div className="mt-3 rounded-lg bg-red-50 px-4 py-3 dark:bg-red-900/20">
           {rejectionErrors.map((err, i) => (
-            <p key={i} className="text-sm text-red-700">
+            <p key={i} className="text-sm text-red-700 dark:text-red-400">
               {err}
             </p>
           ))}

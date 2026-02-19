@@ -14,9 +14,13 @@ import { compositeFullResolution } from "../lib/compositor";
 import { enqueueProcessing } from "../lib/queue";
 import { DropZone } from "./DropZone";
 import { ModelProgress } from "./ModelProgress";
+import { ThemeToggle } from "./ThemeToggle";
+import { BackgroundToggle } from "./BackgroundToggle";
+import { BatchProgress } from "./BatchProgress";
+import { ImageGrid } from "./ImageGrid";
 
 // ---------------------------------------------------------------------------
-// HEIC helpers (unchanged from Phase 1)
+// HEIC helpers
 // ---------------------------------------------------------------------------
 
 const HEIC_TYPES = new Set(["image/heic", "image/heif"]);
@@ -58,7 +62,9 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
       return {
         ...state,
         images: state.images.map((img) =>
-          img.id === action.id ? { ...img, status: "queued" as ImageStatus } : img,
+          img.id === action.id
+            ? { ...img, status: "queued" as ImageStatus }
+            : img,
         ),
       };
 
@@ -102,7 +108,6 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
       };
 
     case "RETRY": {
-      // Revoke old result URLs before retrying
       const target = state.images.find((img) => img.id === action.id);
       if (target?.resultUrl) URL.revokeObjectURL(target.resultUrl);
       if (target?.resultWhiteUrl) URL.revokeObjectURL(target.resultWhiteUrl);
@@ -139,7 +144,6 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
       return { ...state, backgroundMode: action.mode };
 
     case "CLEAR_ALL": {
-      // Revoke ALL Blob URLs
       for (const img of state.images) {
         URL.revokeObjectURL(img.originalUrl);
         if (img.resultUrl) URL.revokeObjectURL(img.resultUrl);
@@ -188,14 +192,11 @@ export function App() {
     Map<string, { loaded: number; total: number }>
   >(new Map());
 
-  // stateRef pattern: keep a ref that mirrors state so async callbacks
-  // (processOneImage) can read current state without stale closures
   const stateRef = useRef(state);
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
-  // Pending inference promises: Map<imageId, {resolve, reject}>
   const pendingInferencesRef = useRef<
     Map<
       string,
@@ -212,12 +213,6 @@ export function App() {
   >(new Map());
 
   // -------------------------------------------------------------------------
-  // Cross-origin isolation check
-  // -------------------------------------------------------------------------
-  const isIsolated =
-    typeof crossOriginIsolated !== "undefined" && crossOriginIsolated;
-
-  // -------------------------------------------------------------------------
   // Worker creation + message handler
   // -------------------------------------------------------------------------
   useEffect(() => {
@@ -226,7 +221,6 @@ export function App() {
       { type: "module" },
     );
 
-    // Eagerly start model loading
     workerRef.current.postMessage({ type: "load-model" });
 
     const worker = workerRef.current;
@@ -271,7 +265,6 @@ export function App() {
           break;
 
         case "inference-start":
-          // No action needed -- status already set to "processing" before postMessage
           break;
 
         case "inference-complete": {
@@ -315,63 +308,56 @@ export function App() {
   // -------------------------------------------------------------------------
   // Process one image (called by concurrency queue)
   // -------------------------------------------------------------------------
-  const processOneImage = useCallback(
-    async (id: string) => {
-      const image = stateRef.current.images.find((img) => img.id === id);
-      if (!image) return;
+  const processOneImage = useCallback(async (id: string) => {
+    const image = stateRef.current.images.find((img) => img.id === id);
+    if (!image) return;
 
-      dispatch({ type: "SET_PROCESSING", id });
+    dispatch({ type: "SET_PROCESSING", id });
 
-      try {
-        // 1. Send to worker for inference
-        const maskData = await new Promise<{
-          data: Uint8ClampedArray;
-          width: number;
-          height: number;
-          channels: number;
-        }>((resolve, reject) => {
-          pendingInferencesRef.current.set(id, { resolve, reject });
-          workerRef.current?.postMessage({
-            type: "process",
-            imageId: id,
-            imageData: image.file,
-          });
+    try {
+      const maskData = await new Promise<{
+        data: Uint8ClampedArray;
+        width: number;
+        height: number;
+        channels: number;
+      }>((resolve, reject) => {
+        pendingInferencesRef.current.set(id, { resolve, reject });
+        workerRef.current?.postMessage({
+          type: "process",
+          imageId: id,
+          imageData: image.file,
         });
+      });
 
-        // 2. Generate transparent PNG
-        const transparentBlob = await compositeFullResolution(
-          image.file,
-          maskData,
-          "transparent",
-        );
-        const resultUrl = URL.createObjectURL(transparentBlob);
+      const transparentBlob = await compositeFullResolution(
+        image.file,
+        maskData,
+        "transparent",
+      );
+      const resultUrl = URL.createObjectURL(transparentBlob);
 
-        // 3. Generate white-background JPG
-        const whiteBlob = await compositeFullResolution(
-          image.file,
-          maskData,
-          "white",
-        );
-        const resultWhiteUrl = URL.createObjectURL(whiteBlob);
+      const whiteBlob = await compositeFullResolution(
+        image.file,
+        maskData,
+        "white",
+      );
+      const resultWhiteUrl = URL.createObjectURL(whiteBlob);
 
-        dispatch({ type: "SET_DONE", id, resultUrl, resultWhiteUrl });
-      } catch (err) {
-        dispatch({
-          type: "SET_ERROR",
-          id,
-          error: err instanceof Error ? err.message : "Processing failed",
-        });
-      }
-    },
-    [],
-  );
+      dispatch({ type: "SET_DONE", id, resultUrl, resultWhiteUrl });
+    } catch (err) {
+      dispatch({
+        type: "SET_ERROR",
+        id,
+        error: err instanceof Error ? err.message : "Processing failed",
+      });
+    }
+  }, []);
 
   // -------------------------------------------------------------------------
   // Handle accepted files from DropZone
   // -------------------------------------------------------------------------
   const handleFilesAccepted = useCallback(
     async (files: File[]) => {
-      // Convert HEIC at drop time, before entering the queue
       const items: ImageItem[] = await Promise.all(
         files.map(async (file) => {
           const processedFile = isHeicFile(file)
@@ -381,7 +367,7 @@ export function App() {
           return {
             id: nextId(),
             file: processedFile,
-            name: file.name, // Original filename for display
+            name: file.name,
             status: "idle" as const,
             originalUrl: URL.createObjectURL(processedFile),
           };
@@ -390,7 +376,6 @@ export function App() {
 
       dispatch({ type: "ADD_IMAGES", items });
 
-      // Set all to queued and enqueue
       const ids = items.map((item) => item.id);
       for (const id of ids) {
         dispatch({ type: "SET_QUEUED", id });
@@ -402,7 +387,7 @@ export function App() {
   );
 
   // -------------------------------------------------------------------------
-  // Handle rejected files from DropZone (no-op, DropZone shows errors)
+  // Handle rejected files
   // -------------------------------------------------------------------------
   const handleFilesRejected = useCallback((_rejections: FileRejection[]) => {
     // DropZone component handles showing rejection errors internally
@@ -442,162 +427,108 @@ export function App() {
   const processingCount = state.images.filter(
     (i) => i.status === "processing",
   ).length;
+  const hasAnyDone = doneCount > 0;
+  const atLimit = totalCount >= 100;
 
   // -------------------------------------------------------------------------
   // Render
   // -------------------------------------------------------------------------
   return (
-    <div className="flex min-h-screen flex-col items-center gap-6 p-6">
-      <h1 className="text-4xl font-bold text-gray-900">BatchClear.io</h1>
-      <p className="text-lg text-gray-600">
-        Browser-native batch background removal
-      </p>
-
-      {/* Model progress */}
-      {modelStatus !== "ready" && modelStatus !== "idle" && (
-        <ModelProgress status={modelStatus} progress={downloadProgress} />
-      )}
-      {modelStatus === "ready" && totalCount === 0 && (
-        <ModelProgress status={modelStatus} progress={null} />
-      )}
-
-      {/* Drop zone */}
-      <DropZone
-        onFilesAccepted={handleFilesAccepted}
-        onFilesRejected={handleFilesRejected}
-        disabled={modelStatus === "error"}
-        imageCount={totalCount}
-      />
-
-      {/* Batch progress summary */}
-      {totalCount > 0 && (
-        <div className="flex w-full max-w-2xl items-center justify-between">
-          <p className="text-sm text-gray-600">
-            {doneCount} of {totalCount} processed
-            {processingCount > 0 && ` (${processingCount} in progress)`}
-            {errorCount > 0 && (
-              <span className="ml-2 text-red-600">
-                {errorCount} failed
-              </span>
-            )}
-          </p>
-          <button
-            type="button"
-            onClick={handleClearAll}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
-          >
-            Clear all
-          </button>
-        </div>
-      )}
-
-      {/* Image list */}
-      {totalCount > 0 && (
-        <div className="w-full max-w-2xl space-y-2">
-          {state.images.map((img) => (
-            <div
-              key={img.id}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3"
-            >
-              {/* Thumbnail */}
-              <img
-                src={img.resultUrl ?? img.originalUrl}
-                alt={img.name}
-                className="h-12 w-12 rounded object-cover"
+    <div className="flex min-h-screen flex-col dark:text-gray-100">
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              BatchClear.io
+            </h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Background removal
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {hasAnyDone && (
+              <BackgroundToggle
+                mode={state.backgroundMode}
+                onChange={(mode) =>
+                  dispatch({ type: "SET_BACKGROUND_MODE", mode })
+                }
               />
+            )}
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
 
-              {/* Name + status */}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900">
-                  {img.name}
-                </p>
-                <StatusBadge status={img.status} error={img.error} />
+      {/* Main */}
+      <main className="flex-1 overflow-y-auto scroll-smooth">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+          {/* Model progress */}
+          {modelStatus !== "ready" && modelStatus !== "idle" && (
+            <div className="mb-6 flex justify-center">
+              <ModelProgress status={modelStatus} progress={downloadProgress} />
+            </div>
+          )}
+          {modelStatus === "ready" && totalCount === 0 && (
+            <div className="mb-6 flex justify-center">
+              <ModelProgress status={modelStatus} progress={null} />
+            </div>
+          )}
+
+          {/* Drop zone */}
+          {atLimit ? (
+            <div className="mb-6 rounded-lg bg-yellow-50 px-4 py-3 text-center text-sm text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">
+              Maximum 100 images reached
+            </div>
+          ) : (
+            <div
+              className={`mb-6 ${totalCount === 0 ? "flex justify-center" : ""}`}
+            >
+              <DropZone
+                onFilesAccepted={handleFilesAccepted}
+                onFilesRejected={handleFilesRejected}
+                disabled={modelStatus === "error"}
+                imageCount={totalCount}
+                compact={totalCount > 0}
+              />
+            </div>
+          )}
+
+          {/* Batch progress + Clear all */}
+          {totalCount > 0 && (
+            <div className="mb-4 flex items-end gap-4">
+              <div className="flex-1">
+                <BatchProgress
+                  total={totalCount}
+                  done={doneCount}
+                  processing={processingCount}
+                  errors={errorCount}
+                />
               </div>
-
-              {/* Actions */}
-              {img.status === "error" && (
-                <button
-                  type="button"
-                  onClick={() => handleRetry(img.id)}
-                  className="rounded bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100"
-                >
-                  Retry
-                </button>
-              )}
               <button
                 type="button"
-                onClick={() => handleRemove(img.id)}
-                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                aria-label={`Remove ${img.name}`}
+                onClick={handleClearAll}
+                className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                Clear all
               </button>
             </div>
-          ))}
+          )}
+
+          {/* Image grid */}
+          <ImageGrid
+            images={state.images}
+            backgroundMode={state.backgroundMode}
+            onRetry={handleRetry}
+            onRemove={handleRemove}
+          />
         </div>
-      )}
+      </main>
 
-      {/* Cross-origin isolation indicator */}
-      <div className="fixed bottom-3 right-3 flex items-center gap-2 text-xs">
-        <span
-          className={`inline-block h-2 w-2 rounded-full ${
-            isIsolated ? "bg-green-500" : "bg-red-500"
-          }`}
-        />
-        <span className="text-gray-400">
-          crossOriginIsolated:{" "}
-          <code className="font-mono">{String(isIsolated)}</code>
-        </span>
-      </div>
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white/60 py-3 text-center text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-500">
+        Processed locally in your browser &mdash; your images never leave this device
+      </footer>
     </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Status badge sub-component
-// ---------------------------------------------------------------------------
-
-function StatusBadge({
-  status,
-  error,
-}: {
-  status: ImageStatus;
-  error?: string;
-}) {
-  const styles: Record<ImageStatus, string> = {
-    idle: "text-gray-500",
-    queued: "text-yellow-600",
-    processing: "text-blue-600",
-    done: "text-green-600",
-    error: "text-red-600",
-  };
-
-  const labels: Record<ImageStatus, string> = {
-    idle: "Waiting",
-    queued: "Queued",
-    processing: "Processing...",
-    done: "Done",
-    error: "Error",
-  };
-
-  return (
-    <p className={`text-xs ${styles[status]}`}>
-      {labels[status]}
-      {status === "error" && error && (
-        <span className="ml-1 text-red-500">- {error}</span>
-      )}
-    </p>
   );
 }
