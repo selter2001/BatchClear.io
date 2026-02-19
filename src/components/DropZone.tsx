@@ -1,132 +1,120 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useDropzone, type FileRejection } from "react-dropzone";
 
-const ACCEPTED_TYPES = new Set([
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-]);
-
-// iPhone HEIC files sometimes report empty or generic MIME types
-const HEIC_EXTENSIONS = new Set([".heic", ".heif"]);
-
-function isAcceptedFile(file: File): boolean {
-  if (ACCEPTED_TYPES.has(file.type)) return true;
-  const ext = file.name.toLowerCase().match(/\.[^.]+$/)?.[0] ?? "";
-  return HEIC_EXTENSIONS.has(ext);
-}
+const ACCEPT = {
+  "image/png": [".png"],
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/webp": [".webp"],
+  "image/heic": [".heic"],
+  "image/heif": [".heif"],
+};
 
 interface DropZoneProps {
-  onFileDrop: (file: File) => void;
+  onFilesAccepted: (files: File[]) => void;
+  onFilesRejected: (rejections: FileRejection[]) => void;
   disabled: boolean;
+  imageCount: number;
 }
 
-export function DropZone({ onFileDrop, disabled }: DropZoneProps) {
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+export function DropZone({
+  onFilesAccepted,
+  onFilesRejected,
+  disabled,
+  imageCount,
+}: DropZoneProps) {
+  const [rejectionErrors, setRejectionErrors] = useState<string[]>([]);
 
-  const validateAndEmit = useCallback(
-    (file: File | undefined) => {
-      setError(null);
-      if (!file) return;
-      if (!isAcceptedFile(file)) {
-        setError("Invalid file type. Please use PNG, JPG, WebP, or HEIC.");
-        return;
-      }
-      onFileDrop(file);
+  // Clear rejection errors after 5 seconds
+  useEffect(() => {
+    if (rejectionErrors.length === 0) return;
+    const timer = setTimeout(() => setRejectionErrors([]), 5000);
+    return () => clearTimeout(timer);
+  }, [rejectionErrors]);
+
+  const handleRejected = useCallback(
+    (rejections: FileRejection[]) => {
+      const errors = rejections.map((r) => {
+        const name = r.file.name;
+        const reasons = r.errors.map((e) => e.message).join(", ");
+        return `${name}: ${reasons}`;
+      });
+      setRejectionErrors(errors);
+      onFilesRejected(rejections);
     },
-    [onFileDrop],
+    [onFilesRejected],
   );
 
-  const handleDragOver = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      if (!disabled) setIsDragOver(true);
-    },
-    [disabled],
-  );
+  const remaining = Math.max(0, 100 - imageCount);
 
-  const handleDragLeave = useCallback(() => {
-    setIsDragOver(false);
-  }, []);
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragOver(false);
-      if (disabled) return;
-      const file = e.dataTransfer.files[0];
-      validateAndEmit(file);
-    },
-    [disabled, validateAndEmit],
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      validateAndEmit(file);
-      // Reset input so the same file can be re-selected
-      if (inputRef.current) inputRef.current.value = "";
-    },
-    [validateAndEmit],
-  );
-
-  const handleBrowseClick = useCallback(() => {
-    inputRef.current?.click();
-  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: ACCEPT,
+    maxFiles: remaining,
+    multiple: true,
+    disabled,
+    onDropAccepted: onFilesAccepted,
+    onDropRejected: handleRejected,
+  });
 
   return (
-    <div
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      className={`flex w-full max-w-lg flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 transition-colors ${
-        disabled
-          ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-50"
-          : isDragOver
-            ? "border-blue-500 bg-blue-50"
-            : "cursor-pointer border-gray-300 bg-white hover:border-gray-400"
-      }`}
-    >
-      <svg
-        className="mb-4 h-12 w-12 text-gray-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={1.5}
+    <div className="w-full max-w-lg">
+      <div
+        {...getRootProps()}
+        className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 transition-colors ${
+          disabled
+            ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-50"
+            : isDragActive
+              ? "border-blue-500 bg-blue-50"
+              : "cursor-pointer border-gray-300 bg-white hover:border-gray-400"
+        }`}
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-        />
-      </svg>
+        <input {...getInputProps()} />
 
-      <p className="mb-2 text-lg font-medium text-gray-700">
-        Drop an image here
-      </p>
-      <p className="mb-4 text-sm text-gray-500">PNG, JPG, WebP, or HEIC</p>
+        <svg
+          className="mb-4 h-12 w-12 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+          />
+        </svg>
 
-      <button
-        type="button"
-        onClick={handleBrowseClick}
-        disabled={disabled}
-        className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-      >
-        Browse
-      </button>
+        {isDragActive ? (
+          <p className="mb-2 text-lg font-medium text-blue-600">
+            Drop images here...
+          </p>
+        ) : (
+          <>
+            <p className="mb-2 text-lg font-medium text-gray-700">
+              Drop up to 100 images here
+            </p>
+            <p className="mb-4 text-sm text-gray-500">
+              PNG, JPG, WebP, or HEIC
+            </p>
+          </>
+        )}
 
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"
-        onChange={handleInputChange}
-        className="hidden"
-      />
+        {!isDragActive && (
+          <span className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700">
+            Browse
+          </span>
+        )}
+      </div>
 
-      {error && <p className="mt-3 text-sm font-medium text-red-600">{error}</p>}
+      {/* Rejection errors */}
+      {rejectionErrors.length > 0 && (
+        <div className="mt-3 rounded-lg bg-red-50 px-4 py-3">
+          {rejectionErrors.map((err, i) => (
+            <p key={i} className="text-sm text-red-700">
+              {err}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
