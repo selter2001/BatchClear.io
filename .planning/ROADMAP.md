@@ -13,7 +13,7 @@ BatchClear.io ships in three phases that follow the architecture's dependency ch
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation + AI Pipeline** - Prove end-to-end background removal works for a single image in-browser
-- [ ] **Phase 2: Batch Upload + Full UI** - Complete batch processing workflow with progress tracking, previews, and polished interface
+- [x] **Phase 2: Batch Upload + Full UI** - Complete batch processing workflow with progress tracking, previews, and polished interface
 - [ ] **Phase 3: Batch Download + Deploy** - ZIP download, deployment to GitHub Pages, and production verification
 
 ## Phase Details
@@ -47,8 +47,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Batch state infrastructure (react-dropzone multi-file upload, useReducer batch state machine, p-limit concurrency queue, compositor white-background extension, HEIC at drop time)
-- [ ] 02-02-PLAN.md -- Full UI + theme (ImageGrid, ImageCard with before/after + checkerboard, background toggle, dark/light theme, responsive layout, batch progress indicator, visual polish)
+- [x] 02-01-PLAN.md -- Batch state infrastructure (react-dropzone multi-file upload, useReducer batch state machine, p-limit concurrency queue, compositor white-background extension, HEIC at drop time)
+- [x] 02-02-PLAN.md -- Full UI + theme (ImageGrid, ImageCard with before/after + checkerboard, background toggle, dark/light theme, responsive layout, batch progress indicator, visual polish)
 
 ### Phase 3: Batch Download + Deploy
 **Goal**: Users can download all processed images as a ZIP, and the app is live on GitHub Pages with production-verified cross-browser compatibility
@@ -74,9 +74,9 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + AI Pipeline | 2/2 | Complete | 2026-02-19 |
-| 2. Batch Upload + Full UI | 0/2 | Planned | - |
+| 2. Batch Upload + Full UI | 2/2 | Complete | 2026-02-19 |
 | 3. Batch Download + Deploy | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-19*
-*Last updated: 2026-02-19 -- Phase 2 planned*
+*Last updated: 2026-02-19 -- Phase 2 complete*
