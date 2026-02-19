@@ -17,6 +17,7 @@ import {
   triggerDownload,
   downloadSingleImage,
 } from "../lib/download";
+import { createThumbnailUrl } from "../lib/thumbnail";
 import { DropZone } from "./DropZone";
 import { ModelProgress } from "./ModelProgress";
 import { ThemeToggle } from "./ThemeToggle";
@@ -93,6 +94,8 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
                 status: "done" as ImageStatus,
                 resultUrl: action.resultUrl,
                 resultWhiteUrl: action.resultWhiteUrl,
+                resultThumbUrl: action.resultThumbUrl,
+                resultWhiteThumbUrl: action.resultWhiteThumbUrl,
               }
             : img,
         ),
@@ -116,6 +119,9 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
       const target = state.images.find((img) => img.id === action.id);
       if (target?.resultUrl) URL.revokeObjectURL(target.resultUrl);
       if (target?.resultWhiteUrl) URL.revokeObjectURL(target.resultWhiteUrl);
+      if (target?.resultThumbUrl) URL.revokeObjectURL(target.resultThumbUrl);
+      if (target?.resultWhiteThumbUrl)
+        URL.revokeObjectURL(target.resultWhiteThumbUrl);
       return {
         ...state,
         images: state.images.map((img) =>
@@ -126,6 +132,8 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
                 error: undefined,
                 resultUrl: undefined,
                 resultWhiteUrl: undefined,
+                resultThumbUrl: undefined,
+                resultWhiteThumbUrl: undefined,
               }
             : img,
         ),
@@ -136,8 +144,12 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
       const target = state.images.find((img) => img.id === action.id);
       if (target) {
         URL.revokeObjectURL(target.originalUrl);
+        URL.revokeObjectURL(target.thumbnailUrl);
         if (target.resultUrl) URL.revokeObjectURL(target.resultUrl);
         if (target.resultWhiteUrl) URL.revokeObjectURL(target.resultWhiteUrl);
+        if (target.resultThumbUrl) URL.revokeObjectURL(target.resultThumbUrl);
+        if (target.resultWhiteThumbUrl)
+          URL.revokeObjectURL(target.resultWhiteThumbUrl);
       }
       return {
         ...state,
@@ -151,8 +163,12 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
     case "CLEAR_ALL": {
       for (const img of state.images) {
         URL.revokeObjectURL(img.originalUrl);
+        URL.revokeObjectURL(img.thumbnailUrl);
         if (img.resultUrl) URL.revokeObjectURL(img.resultUrl);
         if (img.resultWhiteUrl) URL.revokeObjectURL(img.resultWhiteUrl);
+        if (img.resultThumbUrl) URL.revokeObjectURL(img.resultThumbUrl);
+        if (img.resultWhiteThumbUrl)
+          URL.revokeObjectURL(img.resultWhiteThumbUrl);
       }
       return { ...state, images: [] };
     }
@@ -331,8 +347,12 @@ export function App() {
     return () => {
       for (const img of stateRef.current.images) {
         URL.revokeObjectURL(img.originalUrl);
+        URL.revokeObjectURL(img.thumbnailUrl);
         if (img.resultUrl) URL.revokeObjectURL(img.resultUrl);
         if (img.resultWhiteUrl) URL.revokeObjectURL(img.resultWhiteUrl);
+        if (img.resultThumbUrl) URL.revokeObjectURL(img.resultThumbUrl);
+        if (img.resultWhiteThumbUrl)
+          URL.revokeObjectURL(img.resultWhiteThumbUrl);
       }
     };
   }, []);
@@ -367,6 +387,11 @@ export function App() {
         "transparent",
       );
       const resultUrl = URL.createObjectURL(transparentBlob);
+      const resultThumbUrl = await createThumbnailUrl(
+        transparentBlob,
+        600,
+        "image/png",
+      );
 
       const whiteBlob = await compositeFullResolution(
         file,
@@ -374,8 +399,20 @@ export function App() {
         "white",
       );
       const resultWhiteUrl = URL.createObjectURL(whiteBlob);
+      const resultWhiteThumbUrl = await createThumbnailUrl(
+        whiteBlob,
+        600,
+        "image/jpeg",
+      );
 
-      dispatch({ type: "SET_DONE", id, resultUrl, resultWhiteUrl });
+      dispatch({
+        type: "SET_DONE",
+        id,
+        resultUrl,
+        resultWhiteUrl,
+        resultThumbUrl,
+        resultWhiteThumbUrl,
+      });
     } catch (err) {
       dispatch({
         type: "SET_ERROR",
@@ -396,12 +433,20 @@ export function App() {
             ? await convertHeicToJpeg(file)
             : file;
 
+          const originalUrl = URL.createObjectURL(processedFile);
+          const thumbnailUrl = await createThumbnailUrl(
+            processedFile,
+            600,
+            "image/jpeg",
+          );
+
           return {
             id: nextId(),
             file: processedFile,
             name: file.name,
             status: "idle" as const,
-            originalUrl: URL.createObjectURL(processedFile),
+            originalUrl,
+            thumbnailUrl,
           };
         }),
       );

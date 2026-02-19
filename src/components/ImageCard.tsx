@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { BackgroundMode, ImageItem } from "../lib/types";
 import { BeforeAfter } from "./BeforeAfter";
 
@@ -9,41 +10,42 @@ interface ImageCardProps {
   onDownload?: (image: ImageItem) => void;
 }
 
-export function ImageCard({
+export const ImageCard = memo(function ImageCard({
   image,
   backgroundMode,
   onRetry,
   onRemove,
   onDownload,
 }: ImageCardProps) {
-  const afterUrl =
+  const afterThumbUrl =
     backgroundMode === "transparent"
-      ? image.resultUrl
-      : image.resultWhiteUrl;
+      ? image.resultThumbUrl
+      : image.resultWhiteThumbUrl;
 
   return (
     <div className="animate-fade-in-up overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
       {/* Preview area */}
       <div className="relative">
-        {image.status === "done" && afterUrl ? (
+        {image.status === "done" && afterThumbUrl ? (
           <BeforeAfter
-            beforeUrl={image.originalUrl}
-            afterUrl={afterUrl}
+            beforeUrl={image.thumbnailUrl}
+            afterUrl={afterThumbUrl}
             alt={image.name}
             showCheckerboard={backgroundMode === "transparent"}
           />
         ) : (
           <div
-            className={`relative aspect-[4/3] overflow-hidden ${
+            className={`relative overflow-hidden ${
               image.status === "error"
                 ? "border-b-2 border-red-400"
                 : ""
             }`}
           >
             <img
-              src={image.originalUrl}
+              src={image.thumbnailUrl}
               alt={image.name}
-              className="h-full w-full object-cover"
+              className="block h-auto w-full"
+              decoding="async"
             />
             {/* Processing overlay */}
             {image.status === "processing" && (
@@ -129,7 +131,7 @@ export function ImageCard({
       )}
     </div>
   );
-}
+});
 
 // ---------------------------------------------------------------------------
 // Status badge sub-component

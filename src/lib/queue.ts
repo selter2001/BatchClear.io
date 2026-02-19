@@ -9,7 +9,7 @@
 
 import pLimit from "p-limit";
 
-const limit = pLimit(2);
+const limit = pLimit(1);
 
 /**
  * Enqueue multiple image IDs for processing through the concurrency limiter.

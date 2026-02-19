@@ -59,9 +59,12 @@ export interface ImageItem {
   name: string;              // Original filename for display
   status: ImageStatus;
   error?: string;
-  originalUrl: string;       // Blob URL for original preview
-  resultUrl?: string;        // Blob URL for transparent PNG result
-  resultWhiteUrl?: string;   // Blob URL for white-background JPG result
+  originalUrl: string;       // Full-res blob URL (for compositing input)
+  thumbnailUrl: string;      // Display-size thumbnail (~600px) for grid
+  resultUrl?: string;        // Full-res transparent PNG (for download)
+  resultWhiteUrl?: string;   // Full-res white JPG (for download)
+  resultThumbUrl?: string;   // Display-size transparent thumbnail
+  resultWhiteThumbUrl?: string; // Display-size white thumbnail
 }
 
 export interface BatchState {
@@ -73,7 +76,7 @@ export type BatchAction =
   | { type: "ADD_IMAGES"; items: ImageItem[] }
   | { type: "SET_QUEUED"; id: string }
   | { type: "SET_PROCESSING"; id: string }
-  | { type: "SET_DONE"; id: string; resultUrl: string; resultWhiteUrl: string }
+  | { type: "SET_DONE"; id: string; resultUrl: string; resultWhiteUrl: string; resultThumbUrl: string; resultWhiteThumbUrl: string }
   | { type: "SET_ERROR"; id: string; error: string }
   | { type: "RETRY"; id: string }
   | { type: "REMOVE"; id: string }
