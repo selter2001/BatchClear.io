@@ -6,6 +6,7 @@ interface ImageGridProps {
   backgroundMode: BackgroundMode;
   onRetry: (id: string) => void;
   onRemove: (id: string) => void;
+  onDownload?: (image: ImageItem) => void;
 }
 
 export function ImageGrid({
@@ -13,6 +14,7 @@ export function ImageGrid({
   backgroundMode,
   onRetry,
   onRemove,
+  onDownload,
 }: ImageGridProps) {
   if (images.length === 0) return null;
 
@@ -25,6 +27,7 @@ export function ImageGrid({
           backgroundMode={backgroundMode}
           onRetry={onRetry}
           onRemove={onRemove}
+          onDownload={onDownload}
         />
       ))}
     </div>

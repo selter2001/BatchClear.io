@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import type {
   BatchAction,
   BatchState,
@@ -12,6 +12,11 @@ import type { FileRejection } from "react-dropzone";
 import { heicTo } from "heic-to/csp";
 import { compositeFullResolution } from "../lib/compositor";
 import { enqueueProcessing } from "../lib/queue";
+import {
+  generateBatchZip,
+  triggerDownload,
+  downloadSingleImage,
+} from "../lib/download";
 import { DropZone } from "./DropZone";
 import { ModelProgress } from "./ModelProgress";
 import { ThemeToggle } from "./ThemeToggle";
@@ -158,6 +163,24 @@ function batchReducer(state: BatchState, action: BatchAction): BatchState {
 }
 
 // ---------------------------------------------------------------------------
+// Navigation warning hook
+// ---------------------------------------------------------------------------
+
+function useNavigationWarning(shouldWarn: boolean): void {
+  useEffect(() => {
+    if (!shouldWarn) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = true; // Legacy Chrome/Edge < 119
+    };
+
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [shouldWarn]);
+}
+
+// ---------------------------------------------------------------------------
 // Unique ID generator
 // ---------------------------------------------------------------------------
 
@@ -183,6 +206,11 @@ export function App() {
     null as DownloadProgress | null,
   );
   const [state, dispatch] = useReducer(batchReducer, initialBatchState);
+  const [hasDownloaded, setHasDownloaded] = useState(false);
+  const [zipProgress, setZipProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
 
   // -------------------------------------------------------------------------
   // Refs
@@ -385,6 +413,7 @@ export function App() {
       }
 
       dispatch({ type: "ADD_IMAGES", items });
+      setHasDownloaded(false);
 
       const ids = items.map((item) => item.id);
       for (const id of ids) {
@@ -428,7 +457,44 @@ export function App() {
   const handleClearAll = useCallback(() => {
     filesRef.current.clear();
     dispatch({ type: "CLEAR_ALL" });
+    setHasDownloaded(false);
   }, []);
+
+  // -------------------------------------------------------------------------
+  // Download handlers
+  // -------------------------------------------------------------------------
+  const handleDownloadAll = useCallback(async () => {
+    const doneImages = state.images.filter((i) => i.status === "done");
+    if (doneImages.length === 0) return;
+
+    try {
+      setZipProgress({ current: 0, total: doneImages.length });
+      const blob = await generateBatchZip(
+        state.images,
+        state.backgroundMode,
+        (current, total) => setZipProgress({ current, total }),
+      );
+      triggerDownload(blob, "batchclear-results.zip");
+      setHasDownloaded(true);
+    } catch {
+      // ZIP generation failed -- user can retry
+    } finally {
+      setZipProgress(null);
+    }
+  }, [state.images, state.backgroundMode]);
+
+  const handleDownloadSingle = useCallback(
+    (image: ImageItem) => {
+      const blobUrl =
+        state.backgroundMode === "transparent"
+          ? image.resultUrl
+          : image.resultWhiteUrl;
+      if (blobUrl) {
+        downloadSingleImage(blobUrl, image.name, state.backgroundMode);
+      }
+    },
+    [state.backgroundMode],
+  );
 
   // -------------------------------------------------------------------------
   // Derived counts
@@ -441,6 +507,15 @@ export function App() {
   ).length;
   const hasAnyDone = doneCount > 0;
   const atLimit = totalCount >= 100;
+  const isProcessing = state.images.some(
+    (i) => i.status === "processing" || i.status === "queued",
+  );
+  const hasUndownloaded = doneCount > 0 && !hasDownloaded;
+
+  // -------------------------------------------------------------------------
+  // Navigation warning
+  // -------------------------------------------------------------------------
+  useNavigationWarning(isProcessing || hasUndownloaded);
 
   // -------------------------------------------------------------------------
   // Render
@@ -517,6 +592,31 @@ export function App() {
                   errors={errorCount}
                 />
               </div>
+              {hasAnyDone && (
+                <button
+                  type="button"
+                  onClick={handleDownloadAll}
+                  disabled={zipProgress !== null}
+                  className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                >
+                  <svg
+                    className="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v12m0 0l-4-4m4 4l4-4M4 18h16"
+                    />
+                  </svg>
+                  {zipProgress
+                    ? `Generating ZIP... ${zipProgress.current}/${zipProgress.total}`
+                    : "Download All (ZIP)"}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleClearAll}
@@ -533,6 +633,7 @@ export function App() {
             backgroundMode={state.backgroundMode}
             onRetry={handleRetry}
             onRemove={handleRemove}
+            onDownload={handleDownloadSingle}
           />
         </div>
       </main>

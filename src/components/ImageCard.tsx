@@ -6,6 +6,7 @@ interface ImageCardProps {
   backgroundMode: BackgroundMode;
   onRetry: (id: string) => void;
   onRemove: (id: string) => void;
+  onDownload?: (image: ImageItem) => void;
 }
 
 export function ImageCard({
@@ -13,6 +14,7 @@ export function ImageCard({
   backgroundMode,
   onRetry,
   onRemove,
+  onDownload,
 }: ImageCardProps) {
   const afterUrl =
     backgroundMode === "transparent"
@@ -64,6 +66,28 @@ export function ImageCard({
         <StatusBadge status={image.status} />
 
         {/* Actions */}
+        {image.status === "done" && onDownload && (
+          <button
+            type="button"
+            onClick={() => onDownload(image)}
+            className="rounded-md p-1 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
+            aria-label={`Download ${image.name}`}
+          >
+            <svg
+              className="h-3.5 w-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4v12m0 0l-4-4m4 4l4-4M4 18h16"
+              />
+            </svg>
+          </button>
+        )}
         {image.status === "error" && (
           <button
             type="button"
