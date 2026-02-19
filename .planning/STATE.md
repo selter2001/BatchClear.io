@@ -5,32 +5,32 @@
 See: .planning/PROJECT.md (updated 2026-02-19)
 
 **Core value:** Users can drag-and-drop up to 100 images and get professional-quality background removal -- all processed locally in the browser with zero privacy concerns and zero cost.
-**Current focus:** Phase 1: Foundation + AI Pipeline
+**Current focus:** Phase 1 complete — ready for Phase 2
 
 ## Current Position
 
-Phase: 1 of 3 (Foundation + AI Pipeline)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-19 -- Completed 01-01-PLAN.md (Project Scaffold + AI Pipeline)
+Phase: 1 of 3 (Foundation + AI Pipeline) — COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-19 -- Completed 01-02-PLAN.md (Canvas Compositor + Drop UI)
 
-Progress: [██░░░░░░░░] 17% (1/6 plans)
+Progress: [███░░░░░░░] 33% (2/6 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 4min
-- Total execution time: 4min
+- Total plans completed: 2
+- Average duration: 8min
+- Total execution time: 16min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 1/2 | 4min | 4min |
+| 01-foundation | 2/2 | 16min | 8min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4min)
+- Last 5 plans: 01-01 (4min), 01-02 (12min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -49,6 +49,9 @@ Recent decisions affecting current work:
 - [01-01]: Manual scaffold (no npm create vite) for full config control
 - [01-01]: Record<string, unknown> cast for HF progress callback to handle discriminated union safely
 - [01-01]: any-typed Segmenter wrapper to avoid TS2590 pipeline union explosion
+- [01-02]: heic-to/csp for HEIC conversion (heic2any incompatible with cross-origin isolation)
+- [01-02]: HEIC detection uses MIME type + file extension fallback (iPhone reports empty MIME)
+- [01-02]: Three OffscreenCanvases with shrink-to-1x1 cleanup for iOS Safari memory ceiling
 
 ### Pending Todos
 
@@ -56,12 +59,12 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Research]: `background-removal` pipeline output format unknown -- does it return pre-composited image or raw mask? Must validate in Phase 1 before committing compositor design.
-- [Research]: Safari EXIF orientation with `drawImage()` varies by browser -- needs targeted test during Phase 1 compositing.
+- [Research]: Safari EXIF orientation with `drawImage()` varies by browser -- needs targeted test during Phase 2 compositing.
 - [Research]: fflate streaming ZIP API differs from JSZip's `streamFiles: true` -- confirm exact API before Phase 3.
+- [RESOLVED]: `background-removal` pipeline output format validated — returns RawImage with RGBA, alpha=0 for background, at model resolution (1024x1024). Compositor handles scaling to original dimensions.
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 01-01 (Project Scaffold + AI Pipeline), ready for 01-02
-Resume file: .planning/phases/01-foundation/01-02-PLAN.md
+Stopped at: Phase 1 complete, ready for Phase 2 planning
+Resume file: None

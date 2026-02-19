@@ -12,7 +12,7 @@ BatchClear.io ships in three phases that follow the architecture's dependency ch
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation + AI Pipeline** - Prove end-to-end background removal works for a single image in-browser
+- [x] **Phase 1: Foundation + AI Pipeline** - Prove end-to-end background removal works for a single image in-browser
 - [ ] **Phase 2: Batch Upload + Full UI** - Complete batch processing workflow with progress tracking, previews, and polished interface
 - [ ] **Phase 3: Batch Download + Deploy** - ZIP download, deployment to GitHub Pages, and production verification
 
@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md -- Project scaffold + Web Worker AI pipeline (Vite, React, Tailwind, TypeScript, coi-serviceworker, Worker singleton with RMBG-1.4, model download progress)
-- [ ] 01-02-PLAN.md -- Canvas compositor + minimal drop UI (full-resolution mask compositing, OffscreenCanvas reuse, basic drop zone, end-to-end single-image flow with human verification)
+- [x] 01-02-PLAN.md -- Canvas compositor + minimal drop UI (full-resolution mask compositing, OffscreenCanvas reuse, basic drop zone, end-to-end single-image flow with human verification)
 
 ### Phase 2: Batch Upload + Full UI
 **Goal**: Users can drop up to 100 images and watch them process through a polished, responsive interface with per-image progress, before/after previews, and background mode toggle
@@ -73,10 +73,10 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + AI Pipeline | 1/2 | In progress | - |
+| 1. Foundation + AI Pipeline | 2/2 | Complete | 2026-02-19 |
 | 2. Batch Upload + Full UI | 0/2 | Not started | - |
 | 3. Batch Download + Deploy | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-19*
-*Last updated: 2026-02-19 -- Plan 01-01 complete*
+*Last updated: 2026-02-19 -- Phase 1 complete*
