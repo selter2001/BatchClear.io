@@ -13,9 +13,34 @@ No uploads, no servers, no cost.
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 
+![BatchClear.io — batch processing in action](docs/screenshots/batch-processing-dark.png)
+
 </div>
 
 ---
+
+## Screenshots
+
+<table>
+<tr>
+<td width="50%">
+<strong>Transparent background (dark mode)</strong><br>
+<img src="docs/screenshots/results-transparent-dark.png" alt="Results with transparent background — dark mode" width="100%">
+</td>
+<td width="50%">
+<strong>Transparent background (light mode)</strong><br>
+<img src="docs/screenshots/results-transparent-light.png" alt="Results with transparent background — light mode" width="100%">
+</td>
+</tr>
+<tr>
+<td width="50%">
+<strong>White background output</strong><br>
+<img src="docs/screenshots/results-white-bg-dark.png" alt="Results with white background — dark mode" width="100%">
+</td>
+<td width="50%">
+</td>
+</tr>
+</table>
 
 ## Features
 
