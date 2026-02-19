@@ -45,3 +45,37 @@ export type DownloadProgress = {
   loaded: number;
   total: number;
 };
+
+// ---------------------------------------------------------------------------
+// Batch processing types
+// ---------------------------------------------------------------------------
+
+export type ImageStatus = "idle" | "queued" | "processing" | "done" | "error";
+export type BackgroundMode = "transparent" | "white";
+
+export interface ImageItem {
+  id: string;
+  file: File;               // Original file (or HEIC-converted JPEG)
+  name: string;              // Original filename for display
+  status: ImageStatus;
+  error?: string;
+  originalUrl: string;       // Blob URL for original preview
+  resultUrl?: string;        // Blob URL for transparent PNG result
+  resultWhiteUrl?: string;   // Blob URL for white-background JPG result
+}
+
+export interface BatchState {
+  images: ImageItem[];
+  backgroundMode: BackgroundMode;
+}
+
+export type BatchAction =
+  | { type: "ADD_IMAGES"; items: ImageItem[] }
+  | { type: "SET_QUEUED"; id: string }
+  | { type: "SET_PROCESSING"; id: string }
+  | { type: "SET_DONE"; id: string; resultUrl: string; resultWhiteUrl: string }
+  | { type: "SET_ERROR"; id: string; error: string }
+  | { type: "RETRY"; id: string }
+  | { type: "REMOVE"; id: string }
+  | { type: "SET_BACKGROUND_MODE"; mode: BackgroundMode }
+  | { type: "CLEAR_ALL" };

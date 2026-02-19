@@ -11,12 +11,13 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Composite a full-resolution transparent PNG by applying a model-resolution
- * mask to the original image.
+ * Composite a full-resolution image by applying a model-resolution mask to
+ * the original image.
  *
  * @param originalBlob - The original image file as a Blob (full resolution)
  * @param maskData     - The mask output from the segmentation model
- * @returns A PNG Blob with transparent background at original resolution
+ * @param background   - "transparent" for PNG output, "white" for JPG with white fill
+ * @returns A Blob -- PNG for transparent, JPEG for white background
  */
 export async function compositeFullResolution(
   originalBlob: Blob,
@@ -26,6 +27,7 @@ export async function compositeFullResolution(
     height: number;
     channels: number;
   },
+  background: "transparent" | "white" = "transparent",
 ): Promise<Blob> {
   // 1. Load the original image at full resolution
   const originalBitmap = await createImageBitmap(originalBlob);
@@ -99,9 +101,35 @@ export async function compositeFullResolution(
     outputPixels[idx + 3] = scaledMaskPixels[idx + alphaOffset]!;
   }
 
-  // 6. Put modified pixel data back and export as PNG
+  // 6. Put modified pixel data back
   outputCtx.putImageData(outputImageData, 0, 0);
-  const resultBlob = await outputCanvas.convertToBlob({ type: "image/png" });
+
+  let resultBlob: Blob;
+
+  if (background === "white") {
+    // 6a. White background: create a new canvas, fill white, draw masked
+    //     image on top, export as JPEG at 0.95 quality.
+    const whiteCanvas = new OffscreenCanvas(origW, origH);
+    const whiteCtx = whiteCanvas.getContext("2d");
+    if (!whiteCtx)
+      throw new Error("Failed to get 2D context for white canvas");
+
+    whiteCtx.fillStyle = "#ffffff";
+    whiteCtx.fillRect(0, 0, origW, origH);
+    whiteCtx.drawImage(outputCanvas, 0, 0);
+
+    resultBlob = await whiteCanvas.convertToBlob({
+      type: "image/jpeg",
+      quality: 0.95,
+    });
+
+    // Cleanup white canvas
+    whiteCanvas.width = 1;
+    whiteCanvas.height = 1;
+  } else {
+    // 6b. Transparent background: export as PNG (existing behavior)
+    resultBlob = await outputCanvas.convertToBlob({ type: "image/png" });
+  }
 
   // 7. CRITICAL -- Memory cleanup: Release all canvas and bitmap memory.
   //    Shrinking canvases to 1x1 forces the browser to release GPU/canvas

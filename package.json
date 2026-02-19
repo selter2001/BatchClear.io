@@ -11,8 +11,10 @@
   "dependencies": {
     "@huggingface/transformers": "^3.8.0",
     "heic-to": "^1.4.2",
+    "p-limit": "^7.3.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-dropzone": "^15.0.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
