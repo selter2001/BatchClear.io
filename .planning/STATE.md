@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-19)
 
 **Core value:** Users can drag-and-drop up to 100 images and get professional-quality background removal -- all processed locally in the browser with zero privacy concerns and zero cost.
-**Current focus:** Phase 2 complete — ready for Phase 3
+**Current focus:** Phase 3 in progress -- batch download complete, deploy next
 
 ## Current Position
 
-Phase: 2 of 3 (Batch Upload + Full UI) — COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-19 -- Completed 02-02-PLAN.md (Full UI + Theme)
+Phase: 3 of 3 (Batch Download + Deploy)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-19 -- Completed 03-01-PLAN.md (Batch Download)
 
-Progress: [██████░░░░] 67% (4/6 plans)
+Progress: [████████░░] 83% (5/6 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 6min
-- Total execution time: 26min
+- Total execution time: 29min
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [██████░░░░] 67% (4/6 plans)
 |-------|-------|-------|----------|
 | 01-foundation | 2/2 | 16min | 8min |
 | 02-batch-ui | 2/2 | 10min | 5min |
+| 03-download-deploy | 1/2 | 3min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4min), 01-02 (12min), 02-01 (3min), 02-02 (7min)
+- Last 5 plans: 01-02 (12min), 02-01 (3min), 02-02 (7min), 03-01 (3min)
 - Trend: accelerating
 
 *Updated after each plan completion*
@@ -59,19 +60,21 @@ Recent decisions affecting current work:
 - [02-02]: CSS clip-path inset() for before/after slider (no canvas, pure CSS)
 - [02-02]: Sync script in head for theme detection -- prevents FOUC on dark mode
 - [02-02]: filesRef pattern replacing stateRef for processOneImage (stateRef stale due to async useEffect)
+- [03-01]: Uint8Array copy in ZIP ondata callback for TS5.7 strict ArrayBuffer vs ArrayBufferLike BlobPart compat
+- [03-01]: hasDownloaded resets on new image add and Clear All, sets true only on Download All ZIP completion
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- [Research]: fflate streaming ZIP API differs from JSZip's `streamFiles: true` -- confirm exact API before Phase 3.
+- [RESOLVED]: fflate streaming ZIP API confirmed -- Zip + ZipPassThrough with ondata chunk collection works correctly with TS5.7.
 - [RESOLVED]: Safari EXIF orientation -- no issues observed during Phase 2 testing.
 - [RESOLVED]: `background-removal` pipeline output format validated -- returns RawImage with RGBA, alpha=0 for background, at model resolution (1024x1024). Compositor handles scaling to original dimensions.
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 2 complete, ready for Phase 3 planning
-Resume file: None
+Stopped at: Phase 3 plan 1 complete, ready for plan 2 (deploy)
+Resume file: .planning/phases/03-download-deploy/03-02-PLAN.md

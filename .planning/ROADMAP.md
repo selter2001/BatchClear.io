@@ -63,7 +63,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- Batch download (fflate streaming ZIP generation, individual image download, filename preservation with _nobg suffix, duplicate deduplication, navigation warning, Download All UI)
+- [x] 03-01-PLAN.md -- Batch download (fflate streaming ZIP generation, individual image download, filename preservation with _nobg suffix, duplicate deduplication, navigation warning, Download All UI)
 - [ ] 03-02-PLAN.md -- Deploy + production verification (gh-pages deploy script, .nojekyll, README.md, human-verified production deployment with crossOriginIsolated check)
 
 ## Progress
@@ -75,8 +75,8 @@ Phases execute in numeric order: 1 -> 2 -> 3
 |-------|----------------|--------|-----------|
 | 1. Foundation + AI Pipeline | 2/2 | Complete | 2026-02-19 |
 | 2. Batch Upload + Full UI | 2/2 | Complete | 2026-02-19 |
-| 3. Batch Download + Deploy | 0/2 | Not started | - |
+| 3. Batch Download + Deploy | 1/2 | In progress | - |
 
 ---
 *Roadmap created: 2026-02-19*
-*Last updated: 2026-02-19 -- Phase 2 complete*
+*Last updated: 2026-02-19 -- Plan 03-01 complete (batch download)*
