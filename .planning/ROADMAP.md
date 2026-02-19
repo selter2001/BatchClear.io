@@ -44,11 +44,11 @@ Plans:
   3. User can toggle between transparent (PNG) and white background (JPG) output and see the result update in preview
   4. User can compare before/after for each image, with checkerboard pattern behind transparent areas
   5. Dark/light theme toggle persists across sessions; layout works on desktop, tablet, and mobile
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Batch upload + concurrency queue (react-dropzone, file validation, queue manager with max 2 concurrent, per-image progress states, error handling + retry)
-- [ ] 02-02: Full UI + theme (ImageGrid, ImageCard with before/after + checkerboard, background toggle, dark/light theme, responsive layout, batch progress indicator, visual polish)
+- [ ] 02-01-PLAN.md -- Batch state infrastructure (react-dropzone multi-file upload, useReducer batch state machine, p-limit concurrency queue, compositor white-background extension, HEIC at drop time)
+- [ ] 02-02-PLAN.md -- Full UI + theme (ImageGrid, ImageCard with before/after + checkerboard, background toggle, dark/light theme, responsive layout, batch progress indicator, visual polish)
 
 ### Phase 3: Batch Download + Deploy
 **Goal**: Users can download all processed images as a ZIP, and the app is live on GitHub Pages with production-verified cross-browser compatibility
@@ -74,9 +74,9 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + AI Pipeline | 2/2 | Complete | 2026-02-19 |
-| 2. Batch Upload + Full UI | 0/2 | Not started | - |
+| 2. Batch Upload + Full UI | 0/2 | Planned | - |
 | 3. Batch Download + Deploy | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-19*
-*Last updated: 2026-02-19 -- Phase 1 complete*
+*Last updated: 2026-02-19 -- Phase 2 planned*
