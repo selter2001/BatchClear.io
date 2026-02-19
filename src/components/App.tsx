@@ -197,6 +197,10 @@ export function App() {
     stateRef.current = state;
   }, [state]);
 
+  // Map of id -> File, updated synchronously so processOneImage can access
+  // files immediately (before React re-renders and stateRef catches up).
+  const filesRef = useRef<Map<string, File>>(new Map());
+
   const pendingInferencesRef = useRef<
     Map<
       string,
@@ -309,8 +313,8 @@ export function App() {
   // Process one image (called by concurrency queue)
   // -------------------------------------------------------------------------
   const processOneImage = useCallback(async (id: string) => {
-    const image = stateRef.current.images.find((img) => img.id === id);
-    if (!image) return;
+    const file = filesRef.current.get(id);
+    if (!file) return;
 
     dispatch({ type: "SET_PROCESSING", id });
 
@@ -325,19 +329,19 @@ export function App() {
         workerRef.current?.postMessage({
           type: "process",
           imageId: id,
-          imageData: image.file,
+          imageData: file,
         });
       });
 
       const transparentBlob = await compositeFullResolution(
-        image.file,
+        file,
         maskData,
         "transparent",
       );
       const resultUrl = URL.createObjectURL(transparentBlob);
 
       const whiteBlob = await compositeFullResolution(
-        image.file,
+        file,
         maskData,
         "white",
       );
@@ -374,6 +378,12 @@ export function App() {
         }),
       );
 
+      // Store files synchronously BEFORE dispatching so processOneImage
+      // can access them immediately (stateRef lags behind by one render).
+      for (const item of items) {
+        filesRef.current.set(item.id, item.file);
+      }
+
       dispatch({ type: "ADD_IMAGES", items });
 
       const ids = items.map((item) => item.id);
@@ -408,6 +418,7 @@ export function App() {
   // Remove a single image
   // -------------------------------------------------------------------------
   const handleRemove = useCallback((id: string) => {
+    filesRef.current.delete(id);
     dispatch({ type: "REMOVE", id });
   }, []);
 
@@ -415,6 +426,7 @@ export function App() {
   // Clear all images
   // -------------------------------------------------------------------------
   const handleClearAll = useCallback(() => {
+    filesRef.current.clear();
     dispatch({ type: "CLEAR_ALL" });
   }, []);
 
