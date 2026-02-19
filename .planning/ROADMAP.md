@@ -28,11 +28,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. UI remains fully responsive during AI processing -- no freezes, no jank (Web Worker isolation verified)
   4. `crossOriginIsolated === true` in browser console when served locally (coi-serviceworker working)
   5. Zero network requests occur during image processing -- all inference is local
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Project scaffold + Web Worker AI pipeline (Vite, React, Tailwind, TypeScript, coi-serviceworker, Worker singleton with RMBG-1.4, model download progress)
-- [ ] 01-02: Canvas compositor + minimal drop UI (full-resolution mask compositing, OffscreenCanvas reuse, basic drop zone, end-to-end single-image flow)
+- [ ] 01-01-PLAN.md -- Project scaffold + Web Worker AI pipeline (Vite, React, Tailwind, TypeScript, coi-serviceworker, Worker singleton with RMBG-1.4, model download progress)
+- [ ] 01-02-PLAN.md -- Canvas compositor + minimal drop UI (full-resolution mask compositing, OffscreenCanvas reuse, basic drop zone, end-to-end single-image flow with human verification)
 
 ### Phase 2: Batch Upload + Full UI
 **Goal**: Users can drop up to 100 images and watch them process through a polished, responsive interface with per-image progress, before/after previews, and background mode toggle
@@ -73,7 +73,7 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + AI Pipeline | 0/2 | Not started | - |
+| 1. Foundation + AI Pipeline | 0/2 | Planning complete | - |
 | 2. Batch Upload + Full UI | 0/2 | Not started | - |
 | 3. Batch Download + Deploy | 0/2 | Not started | - |
 
