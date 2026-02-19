@@ -60,11 +60,11 @@ Plans:
   3. ZIP generation handles 100 images without browser tab crash or OOM (fflate streaming compression)
   4. App is live on GitHub Pages with `crossOriginIsolated === true` in production; cold-cache model download works on throttled connection
   5. Browser warns user before navigating away when processing is active or undownloaded results exist
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: Batch download (individual image download, fflate ZIP generation with streaming compression, filename preservation, Blob URL lifecycle management)
-- [ ] 03-02: Deploy + production verification (GitHub Pages deploy script, base URL config, cross-browser testing, navigation warning, README.md)
+- [ ] 03-01-PLAN.md -- Batch download (fflate streaming ZIP generation, individual image download, filename preservation with _nobg suffix, duplicate deduplication, navigation warning, Download All UI)
+- [ ] 03-02-PLAN.md -- Deploy + production verification (gh-pages deploy script, .nojekyll, README.md, human-verified production deployment with crossOriginIsolated check)
 
 ## Progress
 
