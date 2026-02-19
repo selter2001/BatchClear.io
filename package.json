@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.0",
+    "fflate": "^0.8.2",
     "heic-to": "^1.4.2",
     "p-limit": "^7.3.0",
     "react": "^19.0.0",
