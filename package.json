@@ -1,7 +1,14 @@
 {
   "name": "batchclear-io",
-  "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Free client-side batch background removal powered by AI",
+  "author": "Wojciech Olszak",
+  "license": "MIT",
+  "homepage": "https://selter2001.github.io/BatchClear.io/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selter2001/BatchClear.io.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
